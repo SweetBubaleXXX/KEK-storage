@@ -6,8 +6,9 @@ const app = require('express')();
 
 const PORT = process.env.PORT || 3000;
 const STORAGE_PATH = process.env.STORAGE_PATH || __dirname;
+const STORAGE_ID = process.env.STORAGE_ID
 const TOKEN_SALT = process.env.TOKEN_SALT || '';
-const ALLOWED_TOKENS = (process.env.ALLOWED_TOKENS || '').split(';');
+const ALLOWED_TOKENS = (process.env.ALLOWED_TOKENS || '').split('|');
 
 const uploadFile = req => {
     return new Promise((resolve, reject) => {
@@ -45,7 +46,9 @@ app.use((req, res, next) => {
         return JSON.parse(Buffer.from(str, 'base64url').toString());
     });
     if (header.alg.toLowerCase() !== 'hs256') return res.sendStatus(401);
-    if (!ALLOWED_TOKENS.includes(payload.sub)) return res.sendStatus(403);
+    if (!ALLOWED_TOKENS.includes(payload.sub) || payload.iss !== STORAGE_ID) {
+        return res.sendStatus(403)
+    };
     const signature = crypto
         .createHmac('SHA256', TOKEN_SALT)
         .update(jwtParts.slice(0, 2).join('.'))

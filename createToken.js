@@ -1,7 +1,9 @@
 const crypto = require('crypto');
 
-if (!process.env.TOKEN_SALT) {
-    console.error('\x1b[31mTOKEN_SALT env variable not set!!!\x1b[0m');
+if (!(process.env.TOKEN_SALT && process.env.STORAGE_ID)) {
+    console.error(
+        '\x1b[31mTOKEN_SALT and STORAGE_ID env variables must be set!!!\x1b[0m'
+    );
     process.exit(1);
 }
 
@@ -11,6 +13,7 @@ const head = Buffer.from(JSON.stringify({
 })).toString('base64url');
 
 const payload = Buffer.from(JSON.stringify({
+    iss: process.env.STORAGE_ID,
     sub: process.argv[2], // IP address
     iat: Math.floor(+new Date() / 1000)
 })).toString('base64url');
