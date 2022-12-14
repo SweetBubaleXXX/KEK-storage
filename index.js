@@ -29,6 +29,7 @@ const uploadFile = req => {
         });
         stream.on('close', () => {
             console.log('100%');
+            fs.chmod(path.join(STORAGE_PATH, req.params.fileId), fs.constants.S_IWUSR);
             resolve(req.params.fileId);
         });
         stream.on('error', err => {
