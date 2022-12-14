@@ -1,12 +1,19 @@
+const { execFile } = require('node:child_process');
 const fs = require('fs');
 const path = require('path');
 const app = require('express')();
-require('dotenv').config();
 
-const middlewares = require('./middlewares')
+const { PORT, STORAGE_PATH, STORAGE_SIZE_LIMIT } = require('./config');
+const middlewares = require('./middlewares');
 
-const PORT = process.env.PORT || 3000;
-const STORAGE_PATH = process.env.STORAGE_PATH || __dirname;
+function getFolderSize(callback) {
+    execFile('du', ['-sb', '.'], { cwd: STORAGE_PATH }, (err, stdout) => {
+        if (err) callback(err);
+        const match = /^\d+/.exec(stdout);
+        const bytes = Number(match[0]);
+        callback(null, bytes);
+    });
+}
 
 const uploadFile = req => {
     return new Promise((resolve, reject) => {
@@ -37,6 +44,16 @@ const uploadFile = req => {
 };
 
 app.use(middlewares.authenticate);
+
+app.get('/space', (req, res) => {
+    getFolderSize((err, bytes) => {
+        if (err) res.status(500).send(err);
+        res.send({
+            used: bytes,
+            capacity: STORAGE_SIZE_LIMIT
+        });
+    });
+});
 
 app.get('/download/:fileId', (req, res) => {
     const stream = fs.createReadStream(path.join(

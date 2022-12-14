@@ -1,8 +1,6 @@
 const crypto = require('crypto');
 
-const STORAGE_ID = process.env.STORAGE_ID
-const TOKEN_SALT = process.env.TOKEN_SALT || '';
-const ALLOWED_TOKENS = (process.env.ALLOWED_TOKENS || '').split('|');
+const { ALLOWED_TOKENS, STORAGE_ID, TOKEN_SALT } = require('./config');
 
 module.exports.authenticate = (req, res, next) => {
     if (!req.headers.authorization) return res.sendStatus(401);
