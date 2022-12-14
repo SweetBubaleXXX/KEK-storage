@@ -2,6 +2,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
 
+require('dotenv').config();
 const app = require('express')();
 
 const PORT = process.env.PORT || 3000;
