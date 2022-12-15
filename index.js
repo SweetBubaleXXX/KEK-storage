@@ -1,29 +1,12 @@
-const { execFile, execFileSync } = require('node:child_process');
 const fs = require('fs');
 const path = require('path');
 const app = require('express')();
 
 const { PORT, STORAGE_PATH, STORAGE_SIZE_LIMIT } = require('./config');
+const { getFolderSize, getFolderSizeSync } = require('./utils');
 const middlewares = require('./middlewares');
 
 let usedSpace = getFolderSizeSync();
-
-function getFolderSizeSync() {
-    const stdout = execFileSync('du', ['-sb', '.'], { cwd: STORAGE_PATH });
-    return parseDuOutput(stdout);
-}
-
-function getFolderSize(callback) {
-    execFile('du', ['-sb', '.'], { cwd: STORAGE_PATH }, (err, stdout) => {
-        if (err) callback(err);
-        callback(null, parseDuOutput(stdout));
-    });
-}
-
-function parseDuOutput(stdout) {
-    const match = /^\d+/.exec(stdout);
-    return Number(match[0]);
-}
 
 const uploadFile = req => {
     return new Promise((resolve, reject) => {
@@ -32,14 +15,18 @@ const uploadFile = req => {
             req.params.fileId
         ));
         stream.on('open', () => {
-            console.log('0%');
             req.pipe(stream);
         });
         stream.on('drain', () => { });
         stream.on('close', () => {
-            console.log('100%');
-            fs.chmod(path.join(STORAGE_PATH, req.params.fileId), fs.constants.S_IWUSR,
-                err => { throw err });
+            if (stream.bytesWritten !== +req.headers['file-size']) {
+                reject('File wasn\'t written successfully');
+            }
+            fs.chmod(
+                path.join(STORAGE_PATH, req.params.fileId),
+                fs.constants.S_IWUSR,
+                reject
+            );
             resolve(req.params.fileId);
         });
         stream.on('error', err => {
@@ -73,8 +60,9 @@ app.get('/download/:fileId', (req, res) => {
 });
 
 app.post('/upload/:fileId', (req, res) => {
-    const fileSize = parseInt(req.headers['file-size']) || 0;
-    if (usedSpace + fileSize > STORAGE_SIZE_LIMIT) res.sendStatus(413);
+    const fileSize = +req.headers['file-size'];
+    const fileIsTooBig = usedSpace + fileSize > STORAGE_SIZE_LIMIT;
+    if (!fileSize || fileIsTooBig) return res.sendStatus(413);
     uploadFile(req)
         .then(() => { res.sendStatus(200) })
         .catch(err => { res.status(500).send(err) });
