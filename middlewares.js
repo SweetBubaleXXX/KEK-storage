@@ -10,7 +10,7 @@ module.exports.authenticate = (req, res, next) => {
     const [header, payload] = jwtParts.slice(0, 2).map(str => {
         return JSON.parse(Buffer.from(str, 'base64url').toString());
     });
-    if (header.alg.toLowerCase() !== 'hs256' || header.alg.typ.toLowerCase() !== 'jwt') {
+    if (header.alg.toLowerCase() !== 'hs256' || header.typ.toLowerCase() !== 'jwt') {
         return res.sendStatus(401);
     }
     if (!ALLOWED_TOKENS.includes(payload.sub) || payload.iss !== STORAGE_ID) {
