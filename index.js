@@ -10,10 +10,8 @@ let usedSpace = getFolderSizeSync();
 
 const uploadFile = req => {
     return new Promise((resolve, reject) => {
-        const stream = fs.createWriteStream(path.join(
-            STORAGE_PATH,
-            req.params.fileId
-        ));
+        const filePath = path.join(STORAGE_PATH, req.params.fileId);
+        const stream = fs.createWriteStream(filePath);
         stream.on('open', () => {
             req.pipe(stream);
         });
@@ -25,7 +23,9 @@ const uploadFile = req => {
             fs.chmod(
                 path.join(STORAGE_PATH, req.params.fileId),
                 fs.constants.S_IWUSR,
-                reject
+                err => {
+                    if (err) reject(err);
+                }
             );
             resolve(req.params.fileId);
         });
@@ -63,9 +63,13 @@ app.post('/upload/:fileId', (req, res) => {
     const fileSize = +req.headers['file-size'];
     const fileIsTooBig = usedSpace + fileSize > STORAGE_SIZE_LIMIT;
     if (!fileSize || fileIsTooBig) return res.sendStatus(413);
+    usedSpace += +req.headers['file-size'];
     uploadFile(req)
         .then(() => { res.sendStatus(200) })
-        .catch(err => { res.status(500).send(err) });
+        .catch(err => {
+            usedSpace -= +req.headers['file-size'];
+            res.status(500).send(err)
+        });
 });
 
 app.listen(PORT, () => {
