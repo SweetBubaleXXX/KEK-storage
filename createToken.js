@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 
-if (!(process.env.TOKEN_SALT && process.env.STORAGE_ID)) {
+const { STORAGE_ID, TOKEN_SALT } = require('./config');
+
+if (!(TOKEN_SALT && STORAGE_ID)) {
     console.error(
         '\x1b[31mTOKEN_SALT and STORAGE_ID env variables must be set!!!\x1b[0m'
     );
