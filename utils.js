@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { execFile, execFileSync } = require('node:child_process');
 
 const { STORAGE_PATH } = require('./config');
@@ -29,6 +30,20 @@ function moveFile(oldPath, newPath) {
     });
 }
 
+function removeOldFiles(callback) {
+    fs.readdir(STORAGE_PATH, (err, files) => {
+        if (err && callback) return callback(err);
+        files.forEach(filename => {
+            if (filename.endsWith('.old')) {
+                fs.unlink(
+                    path.join(STORAGE_PATH, filename),
+                    err => callback && callback(err)
+                );
+            }
+        });
+    });
+}
+
 function writeFile(req) {
     return new Promise((resolve, reject) => {
         const filePath = path.join(STORAGE_PATH, req.params.fileId);
@@ -45,7 +60,7 @@ function writeFile(req) {
                 path.join(STORAGE_PATH, req.params.fileId),
                 fs.constants.S_IWUSR,
                 err => {
-                    if (err) console.error(`CHMOD error: ${err}`);
+                    if (err) console.error(`CHMOD:\n\t${err}`);
                 }
             );
             resolve(req.params.fileId);
@@ -57,11 +72,10 @@ function writeFile(req) {
     });
 }
 
-function removeOldFiles() { }
-
 module.exports = {
     getFolderSize,
     getFolderSizeSync,
     moveFile,
+    removeOldFiles,
     writeFile
 };

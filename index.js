@@ -3,7 +3,13 @@ const path = require('path');
 const app = require('express')();
 
 const { PORT, STORAGE_PATH, STORAGE_SIZE_LIMIT } = require('./config');
-const { getFolderSize, getFolderSizeSync, moveFile, writeFile } = require('./utils');
+const {
+    getFolderSize,
+    getFolderSizeSync,
+    moveFile,
+    removeOldFiles,
+    writeFile
+} = require('./utils');
 const middlewares = require('./middlewares');
 
 let usedSpace = getFolderSizeSync();
@@ -50,7 +56,7 @@ app.post('/upload/:fileId', async (req, res) => {
             res.sendStatus(200);
         })
         .catch(err => {
-            moveFile(backupFilePath, filePath);
+            if (fileExists) moveFile(backupFilePath, filePath);
             res.status(500).send(err);
         });
 });
