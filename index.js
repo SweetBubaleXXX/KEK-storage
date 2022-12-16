@@ -3,38 +3,10 @@ const path = require('path');
 const app = require('express')();
 
 const { PORT, STORAGE_PATH, STORAGE_SIZE_LIMIT } = require('./config');
-const { getFolderSize, getFolderSizeSync } = require('./utils');
+const { getFolderSize, getFolderSizeSync, moveFile, writeFile } = require('./utils');
 const middlewares = require('./middlewares');
 
 let usedSpace = getFolderSizeSync();
-
-const uploadFile = req => {
-    return new Promise((resolve, reject) => {
-        const filePath = path.join(STORAGE_PATH, req.params.fileId);
-        const stream = fs.createWriteStream(filePath);
-        stream.on('open', () => {
-            req.pipe(stream);
-        });
-        stream.on('drain', () => { });
-        stream.on('close', () => {
-            if (stream.bytesWritten !== +req.headers['file-size']) {
-                reject('File wasn\'t written successfully');
-            }
-            fs.chmod(
-                path.join(STORAGE_PATH, req.params.fileId),
-                fs.constants.S_IWUSR,
-                err => {
-                    if (err) reject(err);
-                }
-            );
-            resolve(req.params.fileId);
-        });
-        stream.on('error', err => {
-            console.error(err);
-            reject(err);
-        });
-    });
-};
 
 app.use(middlewares.authenticate);
 
@@ -59,16 +31,27 @@ app.get('/download/:fileId', (req, res) => {
     stream.pipe(res);
 });
 
-app.post('/upload/:fileId', (req, res) => {
+app.post('/upload/:fileId', async (req, res) => {
     const fileSize = +req.headers['file-size'];
     const fileIsTooBig = usedSpace + fileSize > STORAGE_SIZE_LIMIT;
     if (!fileSize || fileIsTooBig) return res.sendStatus(413);
-    usedSpace += +req.headers['file-size'];
-    uploadFile(req)
-        .then(() => { res.sendStatus(200) })
+
+    let existingFileSize = 0;
+    const filePath = path.join(STORAGE_PATH, req.params.fileId)
+    const backupFilePath = `${filePath}.old`;
+    const fileExists = fs.existsSync(filePath);
+    if (fileExists) {
+        existingFileSize = fs.statSync(filePath).size;
+        await moveFile(filePath, backupFilePath);
+    }
+    writeFile(req)
+        .then(() => {
+            usedSpace += (+req.headers['file-size'] - existingFileSize);
+            res.sendStatus(200);
+        })
         .catch(err => {
-            usedSpace -= +req.headers['file-size'];
-            res.status(500).send(err)
+            moveFile(backupFilePath, filePath);
+            res.status(500).send(err);
         });
 });
 
