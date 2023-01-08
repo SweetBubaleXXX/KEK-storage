@@ -32,12 +32,12 @@ function moveFile(oldPath, newPath) {
 
 function removeOldFiles(callback) {
     fs.readdir(STORAGE_PATH, (err, files) => {
-        if (err && callback) return callback(err);
+        if (err) return callback && callback(err);
         files.forEach(filename => {
             if (filename.endsWith('.old')) {
                 fs.unlink(
                     path.join(STORAGE_PATH, filename),
-                    err => callback && callback(err)
+                    err => { if (err) callback && callback(err) }
                 );
             }
         });

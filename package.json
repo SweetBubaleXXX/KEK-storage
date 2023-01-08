@@ -1,12 +1,12 @@
 {
-  "name": "kek-files",
-  "version": "1.0.0",
-  "description": "",
+  "name": "kek-storage",
+  "version": "0.1.0",
+  "description": "File storage for KEK-server",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "SweetBubaleXXX",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.3",

@@ -12,11 +12,12 @@ const {
 } = require('./utils');
 const middlewares = require('./middlewares');
 
+removeOldFiles(err => { if (err) console.error(err) });
 let usedSpace = getFolderSizeSync();
 
 app.use(middlewares.authenticate);
 
-app.get('/space', (req, res) => {
+app.get('/storage', (req, res) => {
     getFolderSize((err, bytes) => {
         if (err) res.status(500).send(err);
         res.send({
@@ -27,6 +28,9 @@ app.get('/space', (req, res) => {
 });
 
 app.get('/download/:fileId', (req, res) => {
+    const filePath = path.join(STORAGE_PATH, req.params.fileId)
+    const fileExists = fs.existsSync(filePath);
+    if (!fileExists) return res.sendStatus(404);
     const stream = fs.createReadStream(path.join(
         STORAGE_PATH,
         req.params.fileId
@@ -42,10 +46,10 @@ app.post('/upload/:fileId', async (req, res) => {
     const fileIsTooBig = usedSpace + fileSize > STORAGE_SIZE_LIMIT;
     if (!fileSize || fileIsTooBig) return res.sendStatus(413);
 
-    let existingFileSize = 0;
     const filePath = path.join(STORAGE_PATH, req.params.fileId)
     const backupFilePath = `${filePath}.old`;
-    const fileExists = fs.existsSync(filePath);
+
+    let existingFileSize = 0;
     if (fileExists) {
         existingFileSize = fs.statSync(filePath).size;
         await moveFile(filePath, backupFilePath);
