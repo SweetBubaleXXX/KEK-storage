@@ -1,25 +1,26 @@
 const crypto = require('crypto');
+const { StatusCodes } = require('http-status-codes');
 
-const { ALLOWED_TOKENS, STORAGE_ID, TOKEN_SALT } = require('./config');
+const { ALLOWED_TOKENS, STORAGE_ID, TOKEN_SALT } = require('../config');
 
 module.exports.authenticate = (req, res, next) => {
-    if (!req.headers.authorization) return res.sendStatus(401);
+    if (!req.headers.authorization) return res.sendStatus(StatusCodes.UNAUTHORIZED);
     const [scheme, jwt] = req.headers.authorization.split(' ');
-    if (scheme.toLowerCase() !== 'bearer') return res.sendStatus(401);
+    if (scheme.toLowerCase() !== 'bearer') return res.sendStatus(StatusCodes.UNAUTHORIZED);
     const jwtParts = jwt.split('.');
     const [header, payload] = jwtParts.slice(0, 2).map(str => {
         return JSON.parse(Buffer.from(str, 'base64url').toString());
     });
     if (header.typ.toLowerCase() !== 'jwt' || header.alg.toLowerCase() !== 'hs256') {
-        return res.sendStatus(401);
+        return res.sendStatus(StatusCodes.UNAUTHORIZED);
     }
     if (!ALLOWED_TOKENS.includes(payload.sub) || payload.iss !== STORAGE_ID) {
-        return res.sendStatus(403)
+        return res.sendStatus(StatusCodes.FORBIDDEN)
     };
     const signature = crypto
         .createHmac('SHA256', TOKEN_SALT)
         .update(jwtParts.slice(0, 2).join('.'))
         .digest('base64url');
-    if (signature !== jwtParts[2]) return res.sendStatus(403);
+    if (signature !== jwtParts[2]) return res.sendStatus(StatusCodes.FORBIDDEN);
     next();
 }
