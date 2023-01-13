@@ -4,13 +4,13 @@ const { PORT } = require('./config');
 const { removeOldFiles } = require('./utils/fileUtils');
 const infoControllers = require('./controllers/infoControllers');
 const fileControllers = require('./controllers/fileControllers');
-const authenticationMiddleware = require('./middleware/authenticationMiddleware');
+const { authenticate } = require('./middleware/authentication');
 
 removeOldFiles(err => { if (err) console.error(err) });
 
-app.use(authenticationMiddleware.authenticate);
+app.use(authenticate);
 
-app.get('/storage', infoControllers.storageSize);
+app.get('/space', infoControllers.storageSpace);
 
 app.get('/download/:fileId', fileControllers.download);
 

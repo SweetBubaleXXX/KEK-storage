@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { StatusCodes } = require('http-status-codes');
 
-const { STORAGE_PATH, STORAGE_SIZE_LIMIT } = require('../config');
+const { STORAGE_PATH } = require('../config');
 const { moveFile, writeFile } = require('../utils/fileUtils');
-let { usedSpace } = require('../utils/storageSizeUtils');
+const { storageSpace } = require('../utils/storageUtils');
 
 exports.download = (req, res) => {
     const filePath = path.join(STORAGE_PATH, req.params.fileId)
@@ -22,7 +22,7 @@ exports.download = (req, res) => {
 
 exports.upload = async (req, res) => {
     const fileSize = +req.headers['file-size'];
-    const fileIsTooBig = usedSpace + fileSize > STORAGE_SIZE_LIMIT;
+    const fileIsTooBig = storageSpace.used + fileSize > storageSpace.capacity;
     if (!fileSize) return res.sendStatus(StatusCodes.LENGTH_REQUIRED);
     if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
@@ -36,7 +36,7 @@ exports.upload = async (req, res) => {
     }
     writeFile(req)
         .then(() => {
-            usedSpace += (+req.headers['file-size'] - existingFileSize);
+            storageSpace.used += (+req.headers['file-size'] - existingFileSize);
             res.sendStatus(StatusCodes.OK);
         })
         .catch(err => {
