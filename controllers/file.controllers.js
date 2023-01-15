@@ -3,8 +3,8 @@ const path = require('path');
 const { StatusCodes } = require('http-status-codes');
 
 const { STORAGE_PATH } = require('../config');
-const { moveFile, writeFile } = require('../utils/fileUtils');
-const { storageSpace } = require('../utils/storageUtils');
+const { moveFile, writeFile } = require('../utils/file.utils');
+const { storageSpace } = require('../utils/storage.utils');
 
 exports.download = (req, res) => {
     const filePath = path.join(STORAGE_PATH, req.params.fileId)

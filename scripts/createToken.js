@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const { STORAGE_ID, TOKEN_SALT } = require('./config');
+const { STORAGE_ID, TOKEN_SALT } = require('../config');
 
 if (!(TOKEN_SALT && STORAGE_ID)) {
     console.error(
