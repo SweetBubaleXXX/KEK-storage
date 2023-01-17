@@ -42,10 +42,9 @@ function writeFile(req) {
                     `actual size ${stream.bytesWritten} bytes.`
                 );
             }
-            fs.chmod(
+            fs.chmodSync(
                 path.join(config.STORAGE_PATH, req.params.fileId),
-                fs.constants.S_IWUSR,
-                err => { if (err) console.error(err) }
+                fs.constants.S_IRUSR | fs.constants.S_IWUSR | fs.constants.S_IRGRP
             );
             resolve(req.params.fileId);
         });

@@ -22,8 +22,8 @@ exports.download = (req, res) => {
 
 exports.upload = async (req, res) => {
     const fileSize = +req.headers['file-size'];
-    const fileIsTooBig = storageSpace.used + fileSize > storageSpace.capacity;
     if (!fileSize) return res.sendStatus(StatusCodes.LENGTH_REQUIRED);
+    const fileIsTooBig = storageSpace.used + fileSize > storageSpace.capacity;
     if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
     const filePath = path.join(config.STORAGE_PATH, req.params.fileId)
