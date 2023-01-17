@@ -5,7 +5,6 @@ const config = require('../config');
 const setUpTestConfig = require('./setUpTestConfig');
 const TEST_TOKEN = require('./token');
 
-
 describe('Test dynamic config importing', () => {
     before(setUpTestConfig);
     it('should import test environment', () => {
