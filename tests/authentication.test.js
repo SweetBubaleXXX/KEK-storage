@@ -10,7 +10,7 @@ const DISALLOWED_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
     + '.Jh494HQ4vCkNjszn5uFH9wz8XE5-F9s5r_Y6yYOt83E';
 const INVALID_SIGNATURE_TOKEN = [...TEST_TOKEN.split('.').slice(0, -1), 'signature'].join('.');
 
-describe('GET /info/space', () => {
+describe('Authentication', () => {
     before(setUpTestConfig);
     it('should return 401 Unauthorized if no auth header', done => {
         request(app).get('/info/space')
