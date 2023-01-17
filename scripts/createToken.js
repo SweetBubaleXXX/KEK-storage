@@ -1,8 +1,8 @@
 const crypto = require('crypto');
 
-const { STORAGE_ID, TOKEN_SALT } = require('../config');
+const config = require('../config');
 
-if (!(TOKEN_SALT && STORAGE_ID)) {
+if (!(config.TOKEN_SALT && config.STORAGE_ID)) {
     console.error(
         '\x1b[31mTOKEN_SALT and STORAGE_ID env variables must be set!!!\x1b[0m'
     );
@@ -11,17 +11,17 @@ if (!(TOKEN_SALT && STORAGE_ID)) {
 
 const head = Buffer.from(JSON.stringify({
     alg: 'HS256',
-    typ: 'jwt'
+    typ: 'JWT'
 })).toString('base64url');
 
 const payload = Buffer.from(JSON.stringify({
-    iss: process.env.STORAGE_ID,
+    iss: config.STORAGE_ID,
     sub: process.argv[2], // IP address
     iat: Math.floor(+new Date() / 1000)
 })).toString('base64url');
 
 const signature = crypto
-    .createHmac('SHA256', process.env.TOKEN_SALT)
+    .createHmac('SHA256', config.TOKEN_SALT)
     .update(`${head}.${payload}`)
     .digest('base64url');
 

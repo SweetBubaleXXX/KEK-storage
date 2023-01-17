@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { STORAGE_PATH } = require('../config');
+const config = require('../config');
 
 function moveFile(oldPath, newPath) {
     return new Promise((resolve, reject) => {
@@ -13,12 +13,12 @@ function moveFile(oldPath, newPath) {
 }
 
 function removeOldFiles(callback) {
-    fs.readdir(STORAGE_PATH, (err, files) => {
+    fs.readdir(config.STORAGE_PATH, (err, files) => {
         if (err) return callback && callback(err);
         files.forEach(filename => {
             if (filename.endsWith('.old')) {
                 fs.unlink(
-                    path.join(STORAGE_PATH, filename),
+                    path.join(config.STORAGE_PATH, filename),
                     err => { if (err) callback && callback(err) }
                 );
             }
@@ -28,7 +28,7 @@ function removeOldFiles(callback) {
 
 function writeFile(req) {
     return new Promise((resolve, reject) => {
-        const filePath = path.join(STORAGE_PATH, req.params.fileId);
+        const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
         const stream = fs.createWriteStream(filePath);
         stream.on('open', () => {
             req.pipe(stream);
@@ -43,7 +43,7 @@ function writeFile(req) {
                 );
             }
             fs.chmod(
-                path.join(STORAGE_PATH, req.params.fileId),
+                path.join(config.STORAGE_PATH, req.params.fileId),
                 fs.constants.S_IWUSR,
                 err => { if (err) console.error(err) }
             );

@@ -1,4 +1,5 @@
 const assert = require('assert');
+const path = require('path');
 
 const config = require('../config');
 const setUpTestConfig = require('./setUpTestConfig');
@@ -6,11 +7,11 @@ const TEST_TOKEN = require('./token');
 
 
 describe('Test dynamic config importing', () => {
-    beforeEach(setUpTestConfig);
+    before(setUpTestConfig);
     it('should import test environment', () => {
         assert.equal(JSON.stringify(config), JSON.stringify({
             PORT: 3000,
-            STORAGE_PATH: 'tests/storage',
+            STORAGE_PATH: path.resolve(__dirname, 'storage'),
             STORAGE_SIZE_LIMIT: 104857600,
             STORAGE_ID: 'Test',
             TOKEN_SALT: 'Salt',

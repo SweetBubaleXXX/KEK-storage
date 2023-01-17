@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { StatusCodes } = require('http-status-codes');
 
-const { ALLOWED_TOKENS, STORAGE_ID, TOKEN_SALT } = require('../config');
+const config = require('../config');
 
 module.exports.authenticate = (req, res, next) => {
     if (!req.headers.authorization) return res.sendStatus(StatusCodes.UNAUTHORIZED);
@@ -14,11 +14,11 @@ module.exports.authenticate = (req, res, next) => {
     if (header.typ.toLowerCase() !== 'jwt' || header.alg.toLowerCase() !== 'hs256') {
         return res.sendStatus(StatusCodes.UNAUTHORIZED);
     }
-    if (!ALLOWED_TOKENS.includes(payload.sub) || payload.iss !== STORAGE_ID) {
+    if (!config.ALLOWED_TOKENS.includes(payload.sub) || payload.iss !== config.STORAGE_ID) {
         return res.sendStatus(StatusCodes.FORBIDDEN)
     };
     const signature = crypto
-        .createHmac('SHA256', TOKEN_SALT)
+        .createHmac('SHA256', config.TOKEN_SALT)
         .update(jwtParts.slice(0, 2).join('.'))
         .digest('base64url');
     if (signature !== jwtParts[2]) return res.sendStatus(StatusCodes.FORBIDDEN);

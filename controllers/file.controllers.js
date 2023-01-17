@@ -2,16 +2,16 @@ const fs = require('fs');
 const path = require('path');
 const { StatusCodes } = require('http-status-codes');
 
-const { STORAGE_PATH } = require('../config');
+const config = require('../config');
 const { moveFile, writeFile } = require('../utils/file.utils');
 const { storageSpace } = require('../utils/storage.utils');
 
 exports.download = (req, res) => {
-    const filePath = path.join(STORAGE_PATH, req.params.fileId)
+    const filePath = path.join(config.STORAGE_PATH, req.params.fileId)
     const fileExists = fs.existsSync(filePath);
     if (!fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
     const stream = fs.createReadStream(path.join(
-        STORAGE_PATH,
+        config.STORAGE_PATH,
         req.params.fileId
     ));
     stream.on('error', err => {
@@ -26,7 +26,7 @@ exports.upload = async (req, res) => {
     if (!fileSize) return res.sendStatus(StatusCodes.LENGTH_REQUIRED);
     if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
-    const filePath = path.join(STORAGE_PATH, req.params.fileId)
+    const filePath = path.join(config.STORAGE_PATH, req.params.fileId)
     const backupFilePath = `${filePath}.old`;
     const fileExists = fs.existsSync(filePath);
     let existingFileSize = 0;
