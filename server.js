@@ -1,8 +1,9 @@
 const app = require('./app');
 const { PORT } = require('./config');
 const { removeOldFilesPromise } = require('./utils/file.utils');
-const { storageSpace } = require('./utils/storage.utils');
+const { createFolderIfNotExists, storageSpace } = require('./utils/storage.utils');
 
+createFolderIfNotExists();
 removeOldFilesPromise()
     .then(storageSpace.calculate)
     .catch(console.error);

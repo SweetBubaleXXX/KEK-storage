@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { execFile, execFileSync } = require('node:child_process');
 
 const config = require('../config');
@@ -11,6 +12,16 @@ function StorageSpace() {
         calculate() {
             this.used = getFolderSizeSync();
         }
+    }
+}
+
+function createFolderIfNotExists() {
+    if (!fs.existsSync(config.STORAGE_PATH)) {
+        fs.mkdirSync(config.STORAGE_PATH, {
+            recursive: true,
+            mode: config.FILE_MODE
+        });
+        console.log(`Directory ${config.STORAGE_PATH} created`);
     }
 }
 
@@ -32,6 +43,7 @@ function _parseDuOutput(stdout) {
 }
 
 module.exports = {
+    createFolderIfNotExists,
     getFolderSize,
     getFolderSizeSync,
     storageSpace: new StorageSpace()
