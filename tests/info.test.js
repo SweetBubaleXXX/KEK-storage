@@ -5,10 +5,15 @@ const { StatusCodes } = require('http-status-codes');
 const app = require('../app');
 const config = require('../config');
 const setUpTestConfig = require('./setUpTestConfig');
+const setUpTestStorage = require('./setUpTestStorage');
+const clearTestStorage = require('./clearTestStorage');
 const TEST_TOKEN = require('./token');
 
 describe('GET /info/space', () => {
     before(setUpTestConfig);
+    beforeEach(setUpTestStorage);
+    afterEach(clearTestStorage);
+
     it('should return 200 OK', done => {
         request(app).get('/info/space')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)

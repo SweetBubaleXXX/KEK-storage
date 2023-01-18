@@ -3,6 +3,8 @@ const { StatusCodes } = require('http-status-codes');
 
 const app = require('../app');
 const setUpTestConfig = require('./setUpTestConfig');
+const setUpTestStorage = require('./setUpTestStorage');
+const clearTestStorage = require('./clearTestStorage');
 const TEST_TOKEN = require('./token');
 
 const DISALLOWED_TOKEN =
@@ -13,6 +15,9 @@ const INVALID_SIGNATURE_TOKEN = [...TEST_TOKEN.split('.').slice(0, -1), 'signatu
 
 describe('Authentication', () => {
     before(setUpTestConfig);
+    beforeEach(setUpTestStorage);
+    afterEach(clearTestStorage);
+
     it('should return 401 Unauthorized if no auth header', done => {
         request(app).get('/info/space')
             .expect(StatusCodes.UNAUTHORIZED, done);

@@ -8,6 +8,8 @@ const { StatusCodes } = require('http-status-codes');
 const app = require('../app');
 const config = require('../config');
 const setUpTestConfig = require('./setUpTestConfig');
+const setUpTestStorage = require('./setUpTestStorage');
+const clearTestStorage = require('./clearTestStorage');
 const TEST_TOKEN = require('./token');
 
 function createTestFile(filename, content) {
@@ -17,8 +19,9 @@ function createTestFile(filename, content) {
 
 describe('GET /file/download', () => {
     before(setUpTestConfig);
-    // before(createStorage);
-    // beforeEach(clearStorage);
+    beforeEach(setUpTestStorage);
+    afterEach(clearTestStorage);
+
     it('should return 404 Not Found if file not exists', done => {
         request(app).get('/file/download/nonexistent-file')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
@@ -40,8 +43,9 @@ describe('GET /file/download', () => {
 
 describe('POST /file/upload', () => {
     before(setUpTestConfig);
-    // before(createStorage);
-    // beforeEach(clearStorage);
+    beforeEach(setUpTestStorage);
+    afterEach(clearTestStorage);
+
     it('should return 411 Length Required if no File-Size header', done => {
         request(app).post('/file/upload/file-for-upload')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
