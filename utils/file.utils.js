@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const config = require('../config');
+const { storageSpace } = require('./storage.utils');
 
 function moveFile(oldPath, newPath) {
     return new Promise((resolve, reject) => {
@@ -41,6 +42,12 @@ function writeFile(req) {
         const stream = fs.createWriteStream(filePath);
         stream.on('open', () => {
             req.pipe(stream);
+        });
+        stream.on('drain', () => {
+            const fileTooBig = storageSpace.used + stream.bytesWritten >= config.STORAGE_SIZE_LIMIT;
+            if (fileTooBig) {
+                stream.destroy(new Error('Not enough space to locate file'));
+            }
         });
         stream.on('error', err => {
             console.error(err);
