@@ -12,6 +12,15 @@ function moveFile(oldPath, newPath) {
     });
 }
 
+function removeOldFilesPromise() {
+    return new Promise((resolve, reject) => {
+        removeOldFiles(err => {
+            if (err) reject(err);
+            resolve();
+        });
+    });
+}
+
 function removeOldFiles(callback) {
     fs.readdir(config.STORAGE_PATH, (err, files) => {
         if (err) return callback && callback(err);
@@ -33,24 +42,24 @@ function writeFile(req) {
         stream.on('open', () => {
             req.pipe(stream);
         });
-        stream.on('drain', () => { });
+        stream.on('error', err => {
+            console.error(err);
+            reject('Error occured while writing file');
+        });
         stream.on('close', () => {
             if (stream.bytesWritten !== +req.headers['file-size']) {
-                reject(
+                return reject(
                     'File wasn\'t written properly. ' +
                     `Expected size ${req.headers['file-size']}, ` +
                     `actual size ${stream.bytesWritten} bytes.`
                 );
             }
-            fs.chmodSync(
+            fs.chmod(
                 path.join(config.STORAGE_PATH, req.params.fileId),
-                fs.constants.S_IRUSR | fs.constants.S_IWUSR | fs.constants.S_IRGRP
+                config.FILE_MODE,
+                err => { if (err) console.error(err) }
             );
             resolve(req.params.fileId);
-        });
-        stream.on('error', err => {
-            console.error(err);
-            reject(err);
         });
     });
 }
@@ -58,5 +67,6 @@ function writeFile(req) {
 module.exports = {
     moveFile,
     removeOldFiles,
+    removeOldFilesPromise,
     writeFile
 };

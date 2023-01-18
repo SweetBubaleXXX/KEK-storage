@@ -1,5 +1,8 @@
 const { storageSpace } = require('../utils/storage.utils');
 
 exports.storageSpace = (req, res) => {
-    res.send(storageSpace);
+    res.send({
+        used: storageSpace.used,
+        capacity: storageSpace.capacity
+    });
 }

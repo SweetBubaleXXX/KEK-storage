@@ -41,7 +41,6 @@ exports.upload = async (req, res) => {
         })
         .catch(err => {
             if (fileExists) moveFile(backupFilePath, filePath);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.toString());
-            console.error(err);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err);
         });
 };

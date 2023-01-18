@@ -2,15 +2,16 @@ const { execFile, execFileSync } = require('node:child_process');
 
 const config = require('../config');
 
-const storageSpace = new StorageSpace();
-storageSpace.calculate();
-
 function StorageSpace() {
-    this.used = 0;
-    this.capacity = config.STORAGE_SIZE_LIMIT;
-    this.calculate = () => {
-        this.used = getFolderSizeSync();
-    };
+    return {
+        used: 0,
+        get capacity() {
+            return config.STORAGE_SIZE_LIMIT;
+        },
+        calculate() {
+            this.used = getFolderSizeSync();
+        }
+    }
 }
 
 function getFolderSizeSync() {
@@ -33,5 +34,5 @@ function _parseDuOutput(stdout) {
 module.exports = {
     getFolderSize,
     getFolderSizeSync,
-    storageSpace
+    storageSpace: new StorageSpace()
 };

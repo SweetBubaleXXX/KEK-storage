@@ -1,8 +1,11 @@
 const app = require('./app');
 const { PORT } = require('./config');
-const { removeOldFiles } = require('./utils/file.utils');
+const { removeOldFilesPromise } = require('./utils/file.utils');
+const { storageSpace } = require('./utils/storage.utils');
 
-removeOldFiles(err => { if (err) console.error(err) });
+removeOldFilesPromise()
+    .then(storageSpace.calculate)
+    .catch(console.error);
 
 app.listen(PORT, () => {
     console.log(`Running on PORT - ${PORT}`);
