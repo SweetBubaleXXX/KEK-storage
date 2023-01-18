@@ -17,20 +17,20 @@ function createTestFile(filename, content) {
     fs.writeFileSync(filePath, content);
 }
 
-describe('GET /file/download', () => {
+describe('GET /file/:fileId', () => {
     before(setUpTestConfig);
     beforeEach(setUpTestStorage);
     afterEach(clearTestStorage);
 
     it('should return 404 Not Found if file not exists', done => {
-        request(app).get('/file/download/nonexistent-file')
+        request(app).get('/file/nonexistent-file')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .expect(StatusCodes.NOT_FOUND, done);
     });
     it('should send correct file', done => {
         const fileContent = 'File content.';
         createTestFile('existing-file', fileContent);
-        request(app).get('/file/download/existing-file')
+        request(app).get('/file/existing-file')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .expect(StatusCodes.OK)
             .end((err, res) => {
@@ -41,25 +41,25 @@ describe('GET /file/download', () => {
     });
 });
 
-describe('POST /file/upload', () => {
+describe('POST /file/:fileId', () => {
     before(setUpTestConfig);
     beforeEach(setUpTestStorage);
     afterEach(clearTestStorage);
 
     it('should return 411 Length Required if no File-Size header', done => {
-        request(app).post('/file/upload/file-for-upload')
+        request(app).post('/file/file-for-upload')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .expect(StatusCodes.LENGTH_REQUIRED, done);
     });
     it('should return 413 Payload Too Large if no File-Size header', done => {
-        request(app).post('/file/upload/file-for-upload')
+        request(app).post('/file/file-for-upload')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .set('File-Size', config.STORAGE_SIZE_LIMIT + 1)
             .expect(StatusCodes.REQUEST_TOO_LONG, done);
     });
     it('should return error if File-Size is incorrect', done => {
         const buffer = Buffer.from('File content.', 'utf8')
-        request(app).post('/file/upload/file-for-upload')
+        request(app).post('/file/file-for-upload')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .set('File-Size', buffer.length+1)
             .send(buffer)
@@ -71,7 +71,7 @@ describe('POST /file/upload', () => {
     });
     it('should return 200 OK', done => {
         const buffer = Buffer.from('File content.', 'utf8')
-        request(app).post('/file/upload/file-for-upload')
+        request(app).post('/file/file-for-upload')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .set('File-Size', buffer.length)
             .send(buffer)
