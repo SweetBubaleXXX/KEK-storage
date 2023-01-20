@@ -4,9 +4,10 @@
   "description": "File storage for KEK-server",
   "main": "server.js",
   "scripts": {
-    "test": "mocha tests/*.test.js",
+    "createToken": "node scripts/createToken",
+    "removeOldFiles": "node scripts/removeOldFiles",
     "dev": "nodemon server.js",
-    "createToken": "node scripts/createToken"
+    "test": "mocha tests/*.test.js"
   },
   "author": "SweetBubaleXXX",
   "license": "GPL-3.0",
