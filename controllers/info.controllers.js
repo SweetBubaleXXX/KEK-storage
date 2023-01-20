@@ -5,4 +5,4 @@ exports.storageSpace = (req, res) => {
         used: storageSpace.used,
         capacity: storageSpace.capacity
     });
-}
+};

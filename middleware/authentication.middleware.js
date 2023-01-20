@@ -15,7 +15,7 @@ module.exports.authenticate = (req, res, next) => {
         return res.sendStatus(StatusCodes.UNAUTHORIZED);
     }
     if (!config.ALLOWED_TOKENS.includes(payload.sub) || payload.iss !== config.STORAGE_ID) {
-        return res.sendStatus(StatusCodes.FORBIDDEN)
+        return res.sendStatus(StatusCodes.FORBIDDEN);
     };
     const signature = crypto
         .createHmac('SHA256', config.TOKEN_SALT)
@@ -23,4 +23,4 @@ module.exports.authenticate = (req, res, next) => {
         .digest('base64url');
     if (signature !== jwtParts[2]) return res.sendStatus(StatusCodes.FORBIDDEN);
     next();
-}
+};

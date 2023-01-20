@@ -37,8 +37,7 @@ function removeOldFiles(callback) {
 
 function writeFile(req) {
     return new Promise((resolve, reject) => {
-        const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
-        const stream = fs.createWriteStream(filePath);
+        const stream = fs.createWriteStream(req.filePath);
         stream.on('open', () => {
             req.pipe(stream);
         });
@@ -55,11 +54,11 @@ function writeFile(req) {
                 );
             }
             fs.chmod(
-                path.join(config.STORAGE_PATH, req.params.fileId),
+                req.filePath,
                 config.FILE_MODE,
                 err => { if (err) console.error(err) }
             );
-            resolve(req.params.fileId);
+            resolve();
         });
     });
 }

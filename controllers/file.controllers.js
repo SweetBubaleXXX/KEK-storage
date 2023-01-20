@@ -1,16 +1,12 @@
 const fs = require('fs');
-const path = require('path');
 const { StatusCodes } = require('http-status-codes');
 
-const config = require('../config');
 const { moveFile, writeFile } = require('../utils/file.utils');
 const { storageSpace } = require('../utils/storage.utils');
 
 exports.download = (req, res) => {
-    const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
-    const fileExists = fs.existsSync(filePath);
-    if (!fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
-    const stream = fs.createReadStream(filePath);
+    if (!req.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
+    const stream = fs.createReadStream(req.filePath);
     stream.on('error', err => {
         console.error(err);
         res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -24,13 +20,11 @@ exports.upload = async (req, res) => {
     const fileIsTooBig = storageSpace.used + fileSize > storageSpace.capacity;
     if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
-    const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
-    const backupFilePath = `${filePath}.old`;
-    const fileExists = fs.existsSync(filePath);
+    const backupFilePath = `${req.filePath}.old`;
     let existingFileSize = 0;
-    if (fileExists) {
-        existingFileSize = fs.statSync(filePath).size;
-        await moveFile(filePath, backupFilePath);
+    if (req.fileExists) {
+        existingFileSize = fs.statSync(req.filePath).size;
+        await moveFile(req.filePath, backupFilePath);
     }
     writeFile(req)
         .then(() => {
@@ -38,16 +32,14 @@ exports.upload = async (req, res) => {
             res.sendStatus(StatusCodes.OK);
         })
         .catch(err => {
-            if (fileExists) moveFile(backupFilePath, filePath);
+            if (req.fileExists) moveFile(backupFilePath, req.filePath);
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err);
         });
 };
 
 exports.delete = (req, res) => {
-    const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
-    const fileExists = fs.existsSync(filePath);
-    if (!fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
-    fs.unlink(filePath, err => {
+    if (!req.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
+    fs.unlink(req.filePath, err => {
         if (err) {
             console.error(err);
             return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
