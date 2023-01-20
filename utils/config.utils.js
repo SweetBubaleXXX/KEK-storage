@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
-const fs = require('fs');
 const path = require('path');
+const { constants: modes } = require('fs');
 
 function Config(configPath, override = false) {
     dotenv.config({ path: configPath, override });
@@ -10,7 +10,7 @@ function Config(configPath, override = false) {
     this.STORAGE_ID = process.env.STORAGE_ID;
     this.TOKEN_SALT = process.env.TOKEN_SALT || '';
     this.ALLOWED_TOKENS = (process.env.ALLOWED_TOKENS || '').split('|');
-    this.FILE_MODE = fs.constants.S_IRUSR | fs.constants.S_IWUSR | fs.constants.S_IRGRP;
+    this.FILE_MODE = modes.S_IRUSR | modes.S_IWUSR | modes.S_IXUSR | modes.S_IRGRP;
 }
 
 module.exports = Config;
