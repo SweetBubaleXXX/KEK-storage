@@ -61,7 +61,7 @@ describe('POST /file/:fileId', () => {
         const buffer = Buffer.from('File content.', 'utf8')
         request(app).post('/file/file-for-upload')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
-            .set('File-Size', buffer.length+1)
+            .set('File-Size', buffer.length + 1)
             .send(buffer)
             .end((err, res) => {
                 if (err) return done(err);
@@ -76,5 +76,35 @@ describe('POST /file/:fileId', () => {
             .set('File-Size', buffer.length)
             .send(buffer)
             .expect(StatusCodes.OK, done);
+    });
+});
+
+describe('DELETE /file/:fileId', () => {
+    before(setUpTestConfig);
+    beforeEach(setUpTestStorage);
+    afterEach(clearTestStorage);
+
+    it('should return 404 Not Found if file not exists', done => {
+        request(app).delete('/file/nonexistent-file')
+            .set('Authorization', `Bearer ${TEST_TOKEN}`)
+            .expect(StatusCodes.NOT_FOUND, done);
+    });
+    it('should return 200 OK', done => {
+        createTestFile('existing-file', 'File content.');
+        request(app).delete('/file/existing-file')
+            .set('Authorization', `Bearer ${TEST_TOKEN}`)
+            .expect(StatusCodes.OK, done);
+    });
+    it('should delete file', done => {
+        createTestFile('file-for-delete', 'File content.');
+        request(app).delete('/file/file-for-delete')
+            .set('Authorization', `Bearer ${TEST_TOKEN}`)
+            .end((err, res) => {
+                if (err) return done(err);
+                assert(!fs.existsSync(
+                    path.join(config.STORAGE_PATH, 'file-for-delete')
+                ));
+                done();
+            });
     });
 });

@@ -7,15 +7,13 @@ const { moveFile, writeFile } = require('../utils/file.utils');
 const { storageSpace } = require('../utils/storage.utils');
 
 exports.download = (req, res) => {
-    const filePath = path.join(config.STORAGE_PATH, req.params.fileId)
+    const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
     const fileExists = fs.existsSync(filePath);
     if (!fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
-    const stream = fs.createReadStream(path.join(
-        config.STORAGE_PATH,
-        req.params.fileId
-    ));
+    const stream = fs.createReadStream(filePath);
     stream.on('error', err => {
-        res.status(500).send(err);
+        console.error(err);
+        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     });
     stream.pipe(res);
 };
@@ -26,7 +24,7 @@ exports.upload = async (req, res) => {
     const fileIsTooBig = storageSpace.used + fileSize > storageSpace.capacity;
     if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
-    const filePath = path.join(config.STORAGE_PATH, req.params.fileId)
+    const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
     const backupFilePath = `${filePath}.old`;
     const fileExists = fs.existsSync(filePath);
     let existingFileSize = 0;
@@ -43,4 +41,17 @@ exports.upload = async (req, res) => {
             if (fileExists) moveFile(backupFilePath, filePath);
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err);
         });
+};
+
+exports.delete = (req, res) => {
+    const filePath = path.join(config.STORAGE_PATH, req.params.fileId);
+    const fileExists = fs.existsSync(filePath);
+    if (!fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
+    fs.unlink(filePath, err => {
+        if (err) {
+            console.error(err);
+            return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+        res.sendStatus(StatusCodes.OK);
+    })
 };
