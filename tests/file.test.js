@@ -7,6 +7,7 @@ const { StatusCodes } = require('http-status-codes');
 
 const app = require('../app');
 const config = require('../config');
+const { storageSpace } = require('../utils/storage.utils')
 const setUpTestConfig = require('./setUpTestConfig');
 const setUpTestStorage = require('./setUpTestStorage');
 const clearTestStorage = require('./clearTestStorage');
@@ -69,13 +70,18 @@ describe('POST /file/:fileId', () => {
                 done();
             });
     });
-    it('should return 200 OK', done => {
+    it('should return 200 OK and correct storage space', done => {
         const buffer = Buffer.from('File content.', 'utf8')
         request(app).post('/file/file-for-upload')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .set('File-Size', buffer.length)
             .send(buffer)
-            .expect(StatusCodes.OK, done);
+            .expect(StatusCodes.OK)
+            .end((err, res) => {
+                if (err) return done(err);
+                assert.equal(res.body.used, buffer.length);
+                done();
+            });;
     });
 });
 
@@ -89,21 +95,28 @@ describe('DELETE /file/:fileId', () => {
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .expect(StatusCodes.NOT_FOUND, done);
     });
-    it('should return 200 OK', done => {
-        createTestFile('existing-file', 'File content.');
-        request(app).delete('/file/existing-file')
-            .set('Authorization', `Bearer ${TEST_TOKEN}`)
-            .expect(StatusCodes.OK, done);
-    });
-    it('should delete file', done => {
+    it('should return 200 OK and delete file', done => {
         createTestFile('file-for-delete', 'File content.');
         request(app).delete('/file/file-for-delete')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
+            .expect(StatusCodes.OK)
             .end((err, res) => {
                 if (err) return done(err);
                 assert(!fs.existsSync(
                     path.join(config.STORAGE_PATH, 'file-for-delete')
                 ));
+                done();
+            });
+    });
+    it('should return correct storage space', done => {
+        createTestFile('file-for-delete', 'File content.');
+        storageSpace.calculate();
+        request(app).delete('/file/file-for-delete')
+            .set('Authorization', `Bearer ${TEST_TOKEN}`)
+            .expect(StatusCodes.OK)
+            .end((err, res) => {
+                if (err) return done(err);
+                assert.equal(res.body.used, 0);
                 done();
             });
     });
