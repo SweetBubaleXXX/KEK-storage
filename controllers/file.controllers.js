@@ -15,9 +15,8 @@ exports.download = (req, res) => {
 };
 
 exports.upload = async (req, res) => {
-    const fileSize = +req.headers['file-size'];
-    if (!fileSize) return res.sendStatus(StatusCodes.LENGTH_REQUIRED);
-    const fileIsTooBig = storageSpace.used + fileSize > storageSpace.capacity;
+    if (!req.fileSize) return res.sendStatus(StatusCodes.LENGTH_REQUIRED);
+    const fileIsTooBig = storageSpace.used + req.fileSize > storageSpace.capacity;
     if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
     const backupFilePath = `${req.filePath}.old`;
@@ -28,8 +27,8 @@ exports.upload = async (req, res) => {
     }
     writeFile(req)
         .then(() => {
-            storageSpace.used += (+req.headers['file-size'] - existingFileSize);
-            res.sendStatus(StatusCodes.OK);
+            storageSpace.used += (req.fileSize - existingFileSize);
+            res.status(StatusCodes.OK).send(storageSpace);
         })
         .catch(err => {
             if (req.fileExists) moveFile(backupFilePath, req.filePath);
@@ -39,11 +38,13 @@ exports.upload = async (req, res) => {
 
 exports.delete = (req, res) => {
     if (!req.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
+    fileSize = fs.statSync(req.filePath).size;
     fs.unlink(req.filePath, err => {
         if (err) {
             console.error(err);
             return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
         }
-        res.sendStatus(StatusCodes.OK);
+        storageSpace.used -= fileSize;
+        res.status(StatusCodes.OK).send(storageSpace);
     })
 };
