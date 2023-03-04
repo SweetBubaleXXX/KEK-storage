@@ -7,7 +7,7 @@ const { StatusCodes } = require('http-status-codes');
 
 const app = require('../app');
 const config = require('../config');
-const { storageSpace } = require('../utils/storage.utils')
+const { storageSpace } = require('../utils/storage.utils');
 const setUpTestConfig = require('./setUpTestConfig');
 const setUpTestStorage = require('./setUpTestStorage');
 const clearTestStorage = require('./clearTestStorage');
@@ -16,6 +16,7 @@ const TEST_TOKEN = require('./token');
 function createTestFile(filename, content) {
     const filePath = path.join(config.STORAGE_PATH, filename);
     fs.writeFileSync(filePath, content);
+    storageSpace.calculate();
 }
 
 describe('GET /file/:fileId', () => {
@@ -110,7 +111,6 @@ describe('DELETE /file/:fileId', () => {
     });
     it('should return correct storage space', done => {
         createTestFile('file-for-delete', 'File content.');
-        storageSpace.calculate();
         request(app).delete('/file/file-for-delete')
             .set('Authorization', `Bearer ${TEST_TOKEN}`)
             .expect(StatusCodes.OK)

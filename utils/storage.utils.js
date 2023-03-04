@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { execFile, execFileSync } = require('node:child_process');
 
 const config = require('../config');
 
@@ -10,7 +9,7 @@ function StorageSpace() {
             return config.STORAGE_SIZE_LIMIT;
         },
         calculate() {
-            this.used = getFolderSizeSync();
+            this.used = getFolderSize();
         }
     }
 }
@@ -25,26 +24,18 @@ function createFolderIfNotExists() {
     }
 }
 
-function getFolderSizeSync() {
-    const stdout = execFileSync('du', ['-sb', '.'], { cwd: config.STORAGE_PATH });
-    return _parseDuOutput(stdout);
-}
-
-function getFolderSize(callback) {
-    execFile('du', ['-sb', '.'], { cwd: config.STORAGE_PATH }, (err, stdout) => {
-        if (err) callback(err);
-        callback(null, _parseDuOutput(stdout));
+function getFolderSize() {
+    let totalSize = 0;
+    fs.readdirSync(config.STORAGE_PATH).forEach(childName => {
+        const stats = fs.statSync(`${config.STORAGE_PATH}/${childName}`);
+        if (stats.isFile())
+            totalSize += stats.size;
     });
-}
-
-function _parseDuOutput(stdout) {
-    const match = /^\d+/.exec(stdout);
-    return Number(match[0]);
+    return totalSize;
 }
 
 module.exports = {
     createFolderIfNotExists,
     getFolderSize,
-    getFolderSizeSync,
     storageSpace: new StorageSpace()
 };
