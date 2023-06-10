@@ -9,6 +9,11 @@ if (!(config.TOKEN_SALT && config.STORAGE_ID)) {
     process.exit(1);
 }
 
+if (!process.argv[2]) {
+    console.error('\x1b[31mRequired positional argument [IP address]\x1b[0m');
+    process.exit(1);
+}
+
 const head = Buffer.from(JSON.stringify({
     alg: 'HS256',
     typ: 'JWT'
