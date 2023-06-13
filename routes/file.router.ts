@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 
-const fileControllers = require('../controllers/file.controllers');
-const { checkIfFileExists, getFilePath, getFileSize } = require('../middleware/file.middleware');
+import fileControllers from '../controllers/file.controllers';
+import { checkIfFileExists, getFilePath, getFileSize } from '../middleware/file.middleware';
 
 const router = express.Router();
 
@@ -15,6 +15,6 @@ router.get('/:fileId', fileControllers.download);
 
 router.post('/:fileId', fileControllers.upload);
 
-router.delete('/:fileId', fileControllers.delete);
+router.delete('/:fileId', fileControllers.remove);
 
-module.exports = router;
+export default router;

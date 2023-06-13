@@ -1,8 +1,8 @@
-const fs = require('fs');
+import fs from 'fs';
 
-const config = require('../config');
+import config from '../config';
 
-function StorageSpace() {
+export function StorageSpace() {
     return {
         used: 0,
         get capacity() {
@@ -14,7 +14,7 @@ function StorageSpace() {
     }
 }
 
-function createFolderIfNotExists() {
+export function createFolderIfNotExists() {
     if (!fs.existsSync(config.STORAGE_PATH)) {
         fs.mkdirSync(config.STORAGE_PATH, {
             recursive: true,
@@ -24,7 +24,7 @@ function createFolderIfNotExists() {
     }
 }
 
-function getFolderSize() {
+export function getFolderSize() {
     let totalSize = 0;
     fs.readdirSync(config.STORAGE_PATH).forEach(childName => {
         const stats = fs.statSync(`${config.STORAGE_PATH}/${childName}`);
@@ -34,8 +34,4 @@ function getFolderSize() {
     return totalSize;
 }
 
-module.exports = {
-    createFolderIfNotExists,
-    getFolderSize,
-    storageSpace: new StorageSpace()
-};
+export const storageSpace = new StorageSpace();

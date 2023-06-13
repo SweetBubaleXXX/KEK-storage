@@ -1,19 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { Request, Response, NextFunction } from 'express';
 
-const config = require('../config');
+import config from '../config';
 
-module.exports.checkIfFileExists = (req, res, next) => {
+export function checkIfFileExists(req: Request, res: Response, next: NextFunction) {
     req.fileExists = fs.existsSync(path.join(config.STORAGE_PATH, req.params.fileId));
     next();
 };
 
-module.exports.getFilePath = (req, res, next) => {
+export function getFilePath(req: Request, res: Response, next: NextFunction) {
     req.filePath = path.join(config.STORAGE_PATH, req.params.fileId);
     next();
 };
 
-module.exports.getFileSize = (req, res, next) => {
+export function getFileSize(req: Request, res: Response, next: NextFunction) {
     req.fileSize = +req.headers['file-size'];
     next();
 };

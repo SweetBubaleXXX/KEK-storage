@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const config = require('../config');
+import config from '../config';
 
-function moveFile(oldPath, newPath) {
+export function moveFile(oldPath, newPath) {
     return new Promise((resolve, reject) => {
         fs.rename(oldPath, newPath, err => {
             if (err) reject(err);
@@ -12,7 +12,7 @@ function moveFile(oldPath, newPath) {
     });
 }
 
-function removeOldFilesPromise() {
+export function removeOldFilesPromise(): Promise<void> {
     return new Promise((resolve, reject) => {
         removeOldFiles(err => {
             if (err) reject(err);
@@ -21,7 +21,7 @@ function removeOldFilesPromise() {
     });
 }
 
-function removeOldFiles(callback) {
+export function removeOldFiles(callback) {
     fs.readdir(config.STORAGE_PATH, (err, files) => {
         if (err) return callback && callback(err);
         files.forEach(filename => {
@@ -35,7 +35,7 @@ function removeOldFiles(callback) {
     });
 }
 
-function writeFile(req) {
+export function writeFile(req) {
     return new Promise((resolve, reject) => {
         const stream = fs.createWriteStream(req.filePath);
         stream.on('open', () => {
@@ -62,10 +62,3 @@ function writeFile(req) {
         });
     });
 }
-
-module.exports = {
-    moveFile,
-    removeOldFiles,
-    removeOldFilesPromise,
-    writeFile
-};

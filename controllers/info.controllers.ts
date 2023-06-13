@@ -1,5 +1,7 @@
-const { storageSpace } = require('../utils/storage.utils');
+import { Request, Response } from 'express';
 
-exports.storageSpace = (req, res) => {
+import { storageSpace } from '../utils/storage.utils';
+
+export function storageInfo(req: Request, res: Response) {
     res.send(storageSpace);
 };

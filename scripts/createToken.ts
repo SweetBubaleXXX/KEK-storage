@@ -1,6 +1,6 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-const config = require('../config');
+import config from '../config';
 
 if (!(config.TOKEN_SALT && config.STORAGE_ID)) {
     console.error(

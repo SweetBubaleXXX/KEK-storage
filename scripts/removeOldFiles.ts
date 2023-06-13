@@ -1,3 +1,3 @@
-const { removeOldFilesPromise } = require('../utils/file.utils');
+import { removeOldFilesPromise } from '../utils/file.utils';
 
 removeOldFilesPromise().catch(console.error);

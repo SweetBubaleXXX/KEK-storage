@@ -1,10 +1,11 @@
-const fs = require('fs');
-const { StatusCodes } = require('http-status-codes');
+import fs from 'fs';
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 
-const { moveFile, writeFile } = require('../utils/file.utils');
-const { storageSpace } = require('../utils/storage.utils');
+import { moveFile, writeFile } from '../utils/file.utils';
+import { storageSpace } from '../utils/storage.utils';
 
-exports.download = (req, res) => {
+export function download(req: Request, res: Response) {
     if (!req.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
     const stream = fs.createReadStream(req.filePath);
     stream.on('error', err => {
@@ -14,7 +15,7 @@ exports.download = (req, res) => {
     stream.pipe(res);
 };
 
-exports.upload = async (req, res) => {
+export async function upload(req: Request, res: Response) {
     if (!req.fileSize) return res.sendStatus(StatusCodes.LENGTH_REQUIRED);
     const fileIsTooBig = storageSpace.used + req.fileSize > storageSpace.capacity;
     if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
@@ -36,9 +37,9 @@ exports.upload = async (req, res) => {
         });
 };
 
-exports.delete = (req, res) => {
+export function remove(req: Request, res: Response) {
     if (!req.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
-    fileSize = fs.statSync(req.filePath).size;
+    const fileSize = fs.statSync(req.filePath).size;
     fs.unlink(req.filePath, err => {
         if (err) {
             console.error(err);
@@ -47,4 +48,10 @@ exports.delete = (req, res) => {
         storageSpace.used -= fileSize;
         res.status(StatusCodes.OK).send(storageSpace);
     })
+};
+
+export default {
+    download,
+    upload,
+    remove,
 };

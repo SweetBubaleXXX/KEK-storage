@@ -1,9 +1,10 @@
-const crypto = require('crypto');
-const { StatusCodes } = require('http-status-codes');
+import crypto from 'crypto';
+import { Request, Response, NextFunction } from 'express';
+import { StatusCodes } from 'http-status-codes';
 
-const config = require('../config');
+import config from '../config';
 
-module.exports.authenticate = (req, res, next) => {
+export function authenticate(req: Request, res: Response, next: NextFunction) {
     if (!req.headers.authorization) return res.sendStatus(StatusCodes.UNAUTHORIZED);
     const [scheme, jwt] = req.headers.authorization.split(' ');
     if (scheme.toLowerCase() !== 'bearer') return res.sendStatus(StatusCodes.UNAUTHORIZED);

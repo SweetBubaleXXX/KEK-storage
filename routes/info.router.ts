@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 
-const infoControllers = require('../controllers/info.controllers');
+import { storageInfo } from '../controllers/info.controllers';
 
 const router = express.Router();
 
-router.get('/space', infoControllers.storageSpace);
+router.get('/space', storageInfo);
 
-module.exports = router;
+export default router;

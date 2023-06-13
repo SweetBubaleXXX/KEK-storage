@@ -1,8 +1,8 @@
-const dotenv = require('dotenv');
-const path = require('path');
-const { constants: modes } = require('fs');
+import dotenv from 'dotenv';
+import path from 'path';
+import { constants as modes } from 'fs';
 
-function Config(configPath, override = false) {
+export default function Config(configPath, override = false) {
     dotenv.config({ path: configPath, override });
     this.PORT = +process.env.PORT || 3000;
     this.STORAGE_PATH = path.resolve(__dirname, '..', process.env.STORAGE_PATH || '');
@@ -12,5 +12,3 @@ function Config(configPath, override = false) {
     this.ALLOWED_TOKENS = (process.env.ALLOWED_TOKENS || '').split('|');
     this.FILE_MODE = modes.S_IRUSR | modes.S_IWUSR | modes.S_IXUSR | modes.S_IRGRP;
 }
-
-module.exports = Config;
