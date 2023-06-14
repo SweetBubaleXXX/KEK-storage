@@ -13,7 +13,7 @@ import setUpTestStorage from './setUpTestStorage';
 import clearTestStorage from './clearTestStorage';
 import TEST_TOKEN from './token';
 
-function createTestFile(filename, content) {
+function createTestFile(filename: string, content: string) {
   const filePath = path.join(config.STORAGE_PATH, filename);
   fs.writeFileSync(filePath, content);
   storageSpace.calculate();

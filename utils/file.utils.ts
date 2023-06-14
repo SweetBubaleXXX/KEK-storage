@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
+import { Request } from 'express';
 
 import config from '../config';
+import { UploadFileRequestParams } from '../middleware/file.middleware';
 
-export function moveFile(oldPath, newPath) {
-  return new Promise((resolve, reject) => {
+export function moveFile(oldPath: string, newPath: string) {
+  return new Promise<void>((resolve, reject) => {
     fs.rename(oldPath, newPath, err => {
       if (err) reject(err);
       resolve();
@@ -13,7 +15,7 @@ export function moveFile(oldPath, newPath) {
 }
 
 export function removeOldFilesPromise(): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     removeOldFiles(err => {
       if (err) reject(err);
       resolve();
@@ -21,7 +23,7 @@ export function removeOldFilesPromise(): Promise<void> {
   });
 }
 
-export function removeOldFiles(callback) {
+export function removeOldFiles(callback: (err: any) => void) {
   fs.readdir(config.STORAGE_PATH, (err, files) => {
     if (err) return callback && callback(err);
     files.forEach(filename => {
@@ -35,9 +37,9 @@ export function removeOldFiles(callback) {
   });
 }
 
-export function writeFile(req) {
-  return new Promise((resolve, reject) => {
-    const stream = fs.createWriteStream(req.filePath);
+export function writeFile(req: Request<UploadFileRequestParams>): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const stream = fs.createWriteStream(req.params.filePath);
     stream.on('open', () => {
       req.pipe(stream);
     });
@@ -46,7 +48,7 @@ export function writeFile(req) {
       reject('Error occured while writing file');
     });
     stream.on('close', () => {
-      if (stream.bytesWritten !== +req.headers['file-size']) {
+      if (stream.bytesWritten !== req.params.fileSize) {
         return reject(
           'File wasn\'t written properly. ' +
           `Expected size ${req.headers['file-size']}, ` +
@@ -54,7 +56,7 @@ export function writeFile(req) {
         );
       }
       fs.chmod(
-        req.filePath,
+        req.params.filePath,
         config.FILE_MODE,
         err => { if (err) console.error(err) }
       );

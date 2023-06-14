@@ -2,17 +2,14 @@ import fs from 'fs';
 
 import config from '../config';
 
-export function StorageSpace() {
-  return {
-    used: 0,
-    get capacity() {
-      return config.STORAGE_SIZE_LIMIT;
-    },
-    calculate() {
-      this.used = getFolderSize();
-    }
+class StorageSpace {
+  used: number = 0;
+  readonly capacity: number = config.STORAGE_SIZE_LIMIT;
+
+  calculate() {
+    this.used = getFolderSize();
   }
-}
+};
 
 export function createFolderIfNotExists() {
   if (!fs.existsSync(config.STORAGE_PATH)) {
@@ -24,7 +21,7 @@ export function createFolderIfNotExists() {
   }
 }
 
-export function getFolderSize() {
+export function getFolderSize(): number {
   let totalSize = 0;
   fs.readdirSync(config.STORAGE_PATH).forEach(childName => {
     const stats = fs.statSync(`${config.STORAGE_PATH}/${childName}`);
