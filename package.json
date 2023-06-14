@@ -4,11 +4,12 @@
   "description": "File storage for KEK-server",
   "main": "index.ts",
   "scripts": {
-    "createToken": "node scripts/createToken.ts",
-    "removeOldFiles": "node scripts/removeOldFiles.ts",
+    "createToken": "ts-node scripts/createToken.ts",
+    "removeOldFiles": "ts-node scripts/removeOldFiles.ts",
+    "start": "ts-node index.ts",
+    "test": "ts-mocha -p ./tsconfig.json tests/*.test.ts",
     "dev": "nodemon index.ts",
-    "test": "mocha tests/*.test.js",
-    "build": "npx tsc"
+    "build": "tsc"
   },
   "author": "SweetBubaleXXX",
   "license": "GPL-3.0",
@@ -22,11 +23,13 @@
     "@types/express": "^4.17.17",
     "@types/http-status-codes": "^1.2.0",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.2.6",
+    "@types/node": "^20.3.1",
     "@types/supertest": "^2.0.12",
     "mocha": "^10.2.0",
-    "nodemon": "^2.0.20",
+    "nodemon": "^2.0.22",
     "supertest": "^6.3.3",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
   }
 }
