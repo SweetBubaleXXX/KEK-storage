@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { Request } from 'express';
 
 import { config } from '../config';
 import { FileRequest, UploadResponse } from '../middleware/file.middleware';
