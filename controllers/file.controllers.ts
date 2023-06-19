@@ -4,11 +4,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { moveFile, writeFile } from '../utils/file.utils';
 import { storageSpace } from '../utils/storage.utils';
-import { ParsedFileRequest, UploadFileRequest } from '../middleware/file.middleware';
+import { FileRequest, BaseResponse, UploadResponse } from '../middleware/file.middleware';
 
-export function downloadFile(req: ParsedFileRequest, res: Response) {
-  if (!req.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
-  const stream = fs.createReadStream(req.filePath);
+export function downloadFile(req: FileRequest, res: BaseResponse) {
+  if (!res.locals.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
+  const stream = fs.createReadStream(res.locals.filePath);
   stream.on('error', err => {
     console.error(err);
     res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -16,31 +16,31 @@ export function downloadFile(req: ParsedFileRequest, res: Response) {
   stream.pipe(res);
 };
 
-export async function uploadFile(req: UploadFileRequest, res: Response) {
-  const fileIsTooBig = storageSpace.used + req.fileSize > storageSpace.capacity;
+export async function uploadFile(req: FileRequest, res: UploadResponse) {
+  const fileIsTooBig = storageSpace.used + res.locals.fileSize > storageSpace.capacity;
   if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
-  const backupFilePath = `${req.filePath}.old`;
+  const backupFilePath = `${res.locals.filePath}.old`;
   let existingFileSize = 0;
-  if (req.fileExists) {
-    existingFileSize = fs.statSync(req.filePath).size;
-    await moveFile(req.filePath, backupFilePath);
+  if (res.locals.fileExists) {
+    existingFileSize = fs.statSync(res.locals.filePath).size;
+    await moveFile(res.locals.filePath, backupFilePath);
   }
-  writeFile(req)
+  writeFile(req, res)
     .then(() => {
-      storageSpace.used += (req.fileSize - existingFileSize);
+      storageSpace.used += (res.locals.fileSize - existingFileSize);
       res.status(StatusCodes.OK).send(storageSpace);
     })
     .catch(err => {
-      if (req.fileExists) moveFile(backupFilePath, req.filePath);
+      if (res.locals.fileExists) moveFile(backupFilePath, res.locals.filePath);
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err);
     });
 };
 
-export function deleteFile(req: ParsedFileRequest, res: Response) {
-  if (!req.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
-  const fileSize = fs.statSync(req.filePath).size;
-  fs.unlink(req.filePath, err => {
+export function deleteFile(req: FileRequest, res: BaseResponse) {
+  if (!res.locals.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
+  const fileSize = fs.statSync(res.locals.filePath).size;
+  fs.unlink(res.locals.filePath, err => {
     if (err) {
       console.error(err);
       return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);

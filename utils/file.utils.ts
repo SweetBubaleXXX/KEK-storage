@@ -3,7 +3,7 @@ import path from 'path';
 import { Request } from 'express';
 
 import { config } from '../config';
-import { UploadFileRequest } from '../middleware/file.middleware';
+import { FileRequest, UploadResponse } from '../middleware/file.middleware';
 
 export function moveFile(oldPath: string, newPath: string) {
   return new Promise<void>((resolve, reject) => {
@@ -37,9 +37,9 @@ export function removeOldFiles(callback: (err: any) => void) {
   });
 }
 
-export function writeFile(req: UploadFileRequest): Promise<void> {
+export function writeFile(req: FileRequest, res: UploadResponse): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const stream = fs.createWriteStream(req.filePath);
+    const stream = fs.createWriteStream(res.locals.filePath);
     stream.on('open', () => {
       req.pipe(stream);
     });
@@ -48,7 +48,7 @@ export function writeFile(req: UploadFileRequest): Promise<void> {
       reject('Error occured while writing file');
     });
     stream.on('close', () => {
-      if (stream.bytesWritten !== req.fileSize) {
+      if (stream.bytesWritten !== res.locals.fileSize) {
         return reject(
           'File wasn\'t written properly. ' +
           `Expected size ${req.headers['file-size']}, ` +
@@ -56,7 +56,7 @@ export function writeFile(req: UploadFileRequest): Promise<void> {
         );
       }
       fs.chmod(
-        req.filePath,
+        res.locals.filePath,
         config.FILE_MODE,
         err => { if (err) console.error(err) }
       );

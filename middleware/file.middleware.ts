@@ -7,28 +7,32 @@ import { config } from '../config';
 
 interface FileRequestParams { fileId: string };
 
-export type RawFileRequest = Request<FileRequestParams> & {
+export type FileRequest = Request<FileRequestParams>;
+
+interface Locals {
   fileExists?: boolean,
   filePath?: string,
   fileSize?: number,
 };
 
-export type ParsedFileRequest = Required<Omit<RawFileRequest, 'fileSize'>>;
+type RawResponse = Response<any, Locals>;
 
-export type UploadFileRequest = Required<RawFileRequest>;
+export type BaseResponse = Response<any, Required<Omit<Locals, 'fileSize'>>>;
 
-export function checkIfFileExists(req: RawFileRequest, res: Response, next: NextFunction) {
-  req.fileExists = fs.existsSync(path.join(config.STORAGE_PATH, req.params.fileId));
+export type UploadResponse = Response<any, Required<Locals>>;
+
+export function checkIfFileExists(req: FileRequest, res: RawResponse, next: NextFunction) {
+  res.locals.fileExists = fs.existsSync(path.join(config.STORAGE_PATH, req.params.fileId));
   next();
 };
 
-export function getFilePath(req: RawFileRequest, res: Response, next: NextFunction) {
-  req.filePath = path.join(config.STORAGE_PATH, req.params.fileId);
+export function getFilePath(req: FileRequest, res: RawResponse, next: NextFunction) {
+  res.locals.filePath = path.join(config.STORAGE_PATH, req.params.fileId);
   next();
 };
 
-export function getFileSize(req: RawFileRequest, res: Response, next: NextFunction) {
+export function getFileSize(req: FileRequest, res: RawResponse, next: NextFunction) {
   if (!req.headers['file-size']) return res.sendStatus(StatusCodes.LENGTH_REQUIRED);
-  req.fileSize = +req.headers['file-size']!;
+  res.locals.fileSize = +req.headers['file-size']!;
   next();
 };
