@@ -19,7 +19,7 @@ export async function uploadFile(req: FileRequest, res: UploadResponse) {
   const fileIsTooBig = storageSpace.used + res.locals.fileSize > storageSpace.capacity;
   if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
-  const backupFilePath = `${res.locals.filePath}.old`;
+  const backupFilePath = `${res.locals.filePath}.bak`;
   let existingFileSize = 0;
   if (res.locals.fileExists) {
     existingFileSize = fs.statSync(res.locals.filePath).size;

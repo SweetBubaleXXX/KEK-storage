@@ -26,7 +26,7 @@ export function removeOldFiles(callback: (err: any) => void) {
   fs.readdir(config.STORAGE_PATH, (err, files) => {
     if (err) return callback && callback(err);
     files.forEach(filename => {
-      if (filename.endsWith('.old')) {
+      if (filename.endsWith('.bak')) {
         fs.unlink(
           path.join(config.STORAGE_PATH, filename),
           err => { if (err) callback && callback(err) }
