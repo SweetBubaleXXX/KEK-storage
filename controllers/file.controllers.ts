@@ -40,15 +40,13 @@ export async function uploadFile(req: FileRequest, res: UploadResponse) {
     });
 };
 
-export function deleteFile(req: FileRequest, res: BaseResponse) {
+export async function deleteFile(req: FileRequest, res: BaseResponse) {
   if (!res.locals.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
   const fileSize = fs.statSync(res.locals.filePath).size;
-  fs.unlink(res.locals.filePath, err => {
-    if (err) {
-      console.error(err);
-      return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
-    }
-    storageSpace.used -= fileSize;
-    res.status(StatusCodes.OK).send(storageSpace);
-  })
+  const backupFilePath = `${res.locals.filePath}.bak`;
+  await moveFile(res.locals.filePath, backupFilePath);
+  storageSpace.used -= fileSize;
+  storageSpace.reservedForBackups += fileSize;
+  res.status(StatusCodes.OK).send(storageSpace);
+  setTimeout(() => { rotateFile(backupFilePath) }, config.BACKUP_FILES_MAX_AGE);
 };
