@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import config from '../config';
-import setUpTestConfig from './setUpTestConfig';
+import { config } from '../config';
+import { setUpTestConfig } from './hooks';
 
 describe('Test dynamic config importing', () => {
   before(setUpTestConfig);

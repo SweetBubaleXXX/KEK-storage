@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import config from '../config';
+import { config } from '../config';
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization) return res.sendStatus(StatusCodes.UNAUTHORIZED);

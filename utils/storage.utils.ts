@@ -1,13 +1,23 @@
 import fs from 'fs';
 
-import config from '../config';
+import { config } from '../config';
 
 class StorageSpace {
   used: number = 0;
-  readonly capacity: number = config.STORAGE_SIZE_LIMIT;
 
   calculate() {
     this.used = getFolderSize();
+  }
+
+  get capacity(): number {
+    return config.STORAGE_SIZE_LIMIT;
+  }
+
+  toJSON() {
+    return {
+      used: this.used,
+      capacity: this.capacity,
+    };
   }
 };
 

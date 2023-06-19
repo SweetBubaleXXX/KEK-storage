@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import config from '../config';
+import { config } from '../config';
 
 if (!(config.TOKEN_SALT && config.STORAGE_ID)) {
     console.error(

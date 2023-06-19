@@ -2,8 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { Request } from 'express';
 
-import config from '../config';
-import { UploadFileRequestParams } from '../middleware/file.middleware';
+import { config } from '../config';
+import { UploadFileRequest } from '../middleware/file.middleware';
 
 export function moveFile(oldPath: string, newPath: string) {
   return new Promise<void>((resolve, reject) => {
@@ -37,9 +37,9 @@ export function removeOldFiles(callback: (err: any) => void) {
   });
 }
 
-export function writeFile(req: Request<UploadFileRequestParams>): Promise<void> {
+export function writeFile(req: UploadFileRequest): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const stream = fs.createWriteStream(req.params.filePath);
+    const stream = fs.createWriteStream(req.filePath);
     stream.on('open', () => {
       req.pipe(stream);
     });
@@ -48,7 +48,7 @@ export function writeFile(req: Request<UploadFileRequestParams>): Promise<void> 
       reject('Error occured while writing file');
     });
     stream.on('close', () => {
-      if (stream.bytesWritten !== req.params.fileSize) {
+      if (stream.bytesWritten !== req.fileSize) {
         return reject(
           'File wasn\'t written properly. ' +
           `Expected size ${req.headers['file-size']}, ` +
@@ -56,7 +56,7 @@ export function writeFile(req: Request<UploadFileRequestParams>): Promise<void> 
         );
       }
       fs.chmod(
-        req.params.filePath,
+        req.filePath,
         config.FILE_MODE,
         err => { if (err) console.error(err) }
       );

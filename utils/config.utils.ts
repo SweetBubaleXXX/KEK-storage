@@ -21,4 +21,8 @@ export default class Config {
     this.ALLOWED_TOKENS = (process.env.ALLOWED_TOKENS || '').split('|');
     this.FILE_MODE = modes.S_IRUSR | modes.S_IWUSR | modes.S_IXUSR | modes.S_IRGRP;
   }
+
+  update(configObj: Config): Config {
+    return Object.assign(this, configObj);
+  }
 };

@@ -2,10 +2,9 @@ import request from 'supertest';
 import { StatusCodes } from 'http-status-codes';
 
 import app from '../app';
-import setUpTestConfig from './setUpTestConfig';
-import setUpTestStorage from './setUpTestStorage';
-import clearTestStorage from './clearTestStorage';
+
 import TEST_TOKEN from './token';
+import { setUpTestConfig, setUpTestStorage, clearTestStorage } from './hooks';
 
 const DISALLOWED_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +

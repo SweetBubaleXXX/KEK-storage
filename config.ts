@@ -1,3 +1,5 @@
 import Config from './utils/config.utils';
 
-export default new Config();
+const config = new Config();
+
+export { config };

@@ -6,12 +6,10 @@ import path from 'path';
 import { StatusCodes } from 'http-status-codes';
 
 import app from '../app';
-import config from '../config';
-import { storageSpace } from '../utils/storage.utils';
-import setUpTestConfig from './setUpTestConfig';
-import setUpTestStorage from './setUpTestStorage';
-import clearTestStorage from './clearTestStorage';
+import { config } from '../config';
 import TEST_TOKEN from './token';
+import { storageSpace } from '../utils/storage.utils';
+import { setUpTestConfig, setUpTestStorage, clearTestStorage } from './hooks';
 
 function createTestFile(filename: string, content: string) {
   const filePath = path.join(config.STORAGE_PATH, filename);
