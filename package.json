@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "createToken": "ts-node scripts/createToken.ts",
-    "removeOldFiles": "ts-node scripts/removeOldFiles.ts",
+    "rotateBackups": "ts-node scripts/rotateBackups.ts",
     "start": "ts-node index.ts",
     "test": "ts-mocha -p ./tsconfig.json tests/*.test.ts",
     "dev": "nodemon index.ts",

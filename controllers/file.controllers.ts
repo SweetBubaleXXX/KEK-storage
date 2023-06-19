@@ -1,9 +1,10 @@
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 
-import { moveFile, writeFile } from '../utils/file.utils';
+import { moveFile, writeFile, rotateFile } from '../utils/file.utils';
 import { storageSpace } from '../utils/storage.utils';
 import { FileRequest, BaseResponse, UploadResponse } from '../middleware/file.middleware';
+import { config } from '../config';
 
 export function downloadFile(req: FileRequest, res: BaseResponse) {
   if (!res.locals.fileExists) return res.sendStatus(StatusCodes.NOT_FOUND);
@@ -16,8 +17,8 @@ export function downloadFile(req: FileRequest, res: BaseResponse) {
 };
 
 export async function uploadFile(req: FileRequest, res: UploadResponse) {
-  const fileIsTooBig = storageSpace.used + res.locals.fileSize > storageSpace.capacity;
-  if (fileIsTooBig) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
+  const fileIsTooLarge = storageSpace.used + res.locals.fileSize > storageSpace.capacity;
+  if (fileIsTooLarge) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
 
   const backupFilePath = `${res.locals.filePath}.bak`;
   let existingFileSize = 0;
@@ -29,6 +30,9 @@ export async function uploadFile(req: FileRequest, res: UploadResponse) {
     .then(() => {
       storageSpace.used += (res.locals.fileSize - existingFileSize);
       res.status(StatusCodes.OK).send(storageSpace);
+      if (res.locals.fileExists) {
+        setTimeout(() => { rotateFile(backupFilePath) }, config.BACKUP_FILES_MAX_AGE);
+      }
     })
     .catch(err => {
       if (res.locals.fileExists) moveFile(backupFilePath, res.locals.filePath);

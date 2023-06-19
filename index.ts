@@ -1,10 +1,10 @@
 import app from './app';
 import { config } from './config';
-import { removeOldFilesPromise } from './utils/file.utils';
+import { rotateBackupsPromise } from './utils/file.utils';
 import { createFolderIfNotExists, storageSpace } from './utils/storage.utils';
 
 createFolderIfNotExists();
-removeOldFilesPromise()
+rotateBackupsPromise()
   .then(storageSpace.calculate)
   .catch(console.error);
 

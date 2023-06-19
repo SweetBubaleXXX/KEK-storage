@@ -7,6 +7,7 @@ export default class Config {
   STORAGE_PATH: string;
   STORAGE_SIZE_LIMIT: number;
   readonly STORAGE_ID: string;
+  BACKUP_FILES_MAX_AGE: number;
   readonly TOKEN_SALT: string;
   readonly ALLOWED_TOKENS: string[];
   readonly FILE_MODE: number;
@@ -17,6 +18,7 @@ export default class Config {
     this.STORAGE_PATH = path.resolve(__dirname, '..', process.env.STORAGE_PATH || '');
     this.STORAGE_SIZE_LIMIT = +process.env.STORAGE_SIZE_LIMIT!;
     this.STORAGE_ID = process.env.STORAGE_ID!;
+    this.BACKUP_FILES_MAX_AGE = +(process.env.BACKUP_FILES_MAX_AGE || 0 );
     this.TOKEN_SALT = process.env.TOKEN_SALT || '';
     this.ALLOWED_TOKENS = (process.env.ALLOWED_TOKENS || '').split('|');
     this.FILE_MODE = modes.S_IRUSR | modes.S_IWUSR | modes.S_IXUSR | modes.S_IRGRP;

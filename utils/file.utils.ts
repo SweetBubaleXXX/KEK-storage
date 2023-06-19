@@ -3,6 +3,7 @@ import path from 'path';
 
 import { config } from '../config';
 import { FileRequest, UploadResponse } from '../middleware/file.middleware';
+import { storageSpace } from './storage.utils';
 
 export function moveFile(oldPath: string, newPath: string) {
   return new Promise<void>((resolve, reject) => {
@@ -13,27 +14,42 @@ export function moveFile(oldPath: string, newPath: string) {
   });
 }
 
-export function removeOldFilesPromise(): Promise<void> {
+export function rotateBackupsPromise(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    removeOldFiles(err => {
+    rotateBackups(err => {
       if (err) reject(err);
       resolve();
     });
   });
 }
 
-export function removeOldFiles(callback: (err: any) => void) {
+export function rotateBackups(callback: (err: any) => void = console.error) {
   fs.readdir(config.STORAGE_PATH, (err, files) => {
-    if (err) return callback && callback(err);
+    if (err) return callback(err);
     files.forEach(filename => {
-      if (filename.endsWith('.bak')) {
-        fs.unlink(
-          path.join(config.STORAGE_PATH, filename),
-          err => { if (err) callback && callback(err) }
-        );
-      }
+      rotateFile(path.join(config.STORAGE_PATH, filename), callback);
     });
   });
+}
+
+export function rotateFile(filePath: string, callback: (err: any) => void = console.error) {
+  if (filePath.endsWith('.bak') && fs.existsSync(filePath)) {
+    const stats = fs.statSync(filePath);
+    if (fileIsOld(stats)) {
+      fs.unlink(
+        filePath,
+        err => {
+          if (err) return callback(err);
+          console.log(`Backup file ${path.basename(filePath)} (${stats.size} bytes) deleted`);
+          storageSpace.reservedForBackups -= stats.size;
+        }
+      );
+    }
+  }
+
+  function fileIsOld(fileStats: fs.Stats) {
+    return (Date.now() - fileStats.mtimeMs) / 1000 > config.BACKUP_FILES_MAX_AGE;
+  }
 }
 
 export function writeFile(req: FileRequest, res: UploadResponse): Promise<void> {
