@@ -4,15 +4,7 @@ import path from 'path';
 import { config } from '../config';
 import { FileRequest, UploadResponse } from '../middleware/file.middleware';
 import { storageSpace } from './storage.utils';
-
-export function moveFile(oldPath: string, newPath: string) {
-  return new Promise<void>((resolve, reject) => {
-    fs.rename(oldPath, newPath, err => {
-      if (err) reject(err);
-      resolve();
-    });
-  });
-}
+import { FileInfo } from '../middleware/file.middleware';
 
 export function rotateBackupsPromise(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -21,7 +13,7 @@ export function rotateBackupsPromise(): Promise<void> {
       resolve();
     });
   });
-}
+};
 
 export function rotateBackups(callback: (err: any) => void = console.error) {
   fs.readdir(config.STORAGE_PATH, (err, files) => {
@@ -30,7 +22,7 @@ export function rotateBackups(callback: (err: any) => void = console.error) {
       rotateFile(path.join(config.STORAGE_PATH, filename), callback);
     });
   });
-}
+};
 
 export function rotateFile(filePath: string, callback: (err: any) => void = console.error) {
   if (filePath.endsWith('.bak') && fs.existsSync(filePath)) {
@@ -40,8 +32,8 @@ export function rotateFile(filePath: string, callback: (err: any) => void = cons
         filePath,
         err => {
           if (err) return callback(err);
-          console.log(`Backup file ${path.basename(filePath)} (${stats.size} bytes) deleted`);
           storageSpace.reservedForBackups -= stats.size;
+          console.log(`Backup file ${path.basename(filePath)} (${stats.size} bytes) deleted`);
         }
       );
     }
@@ -50,10 +42,41 @@ export function rotateFile(filePath: string, callback: (err: any) => void = cons
   function fileIsOld(fileStats: fs.Stats) {
     return (Date.now() - fileStats.mtimeMs) / 1000 > config.BACKUP_FILES_MAX_AGE;
   }
-}
+};
 
-export function writeFile(req: FileRequest, res: UploadResponse): Promise<void> {
+export async function backupFile(metadata: FileInfo): Promise<string> {
+  const backupPath = `${metadata.filePath}.bak`;
+  if (metadata.fileExists) {
+    const fileSize = fs.statSync(metadata.filePath).size;
+    const existingBackupSize = fs.existsSync(backupPath) ? fs.statSync(backupPath).size : 0;
+    await moveFile(metadata.filePath, backupPath);
+    storageSpace.reservedForBackups += (fileSize - existingBackupSize);
+    storageSpace.used -= fileSize;
+  }
+  return backupPath;
+};
+
+export async function restoreFile(filePath: string): Promise<void> {
+  const backupFilePath = `${filePath}.bak`;
+  if (!fs.existsSync(backupFilePath)) throw new Error('Backup file doesn\'t exist');
+  const backupSize = fs.statSync(backupFilePath).size;
+  const existingFileSize = fs.existsSync(filePath) ? fs.statSync(filePath).size : 0;
+  await moveFile(backupFilePath, filePath);
+  storageSpace.reservedForBackups -= backupSize;
+  storageSpace.used += (backupSize - existingFileSize);
+};
+
+export function moveFile(oldPath: string, newPath: string) {
   return new Promise<void>((resolve, reject) => {
+    fs.rename(oldPath, newPath, err => {
+      if (err) reject(err);
+      resolve();
+    });
+  });
+};
+
+export function writeFile(req: FileRequest, res: UploadResponse): Promise<number> {
+  return new Promise<number>((resolve, reject) => {
     const stream = fs.createWriteStream(res.locals.filePath);
     stream.on('open', () => {
       req.pipe(stream);
@@ -63,10 +86,11 @@ export function writeFile(req: FileRequest, res: UploadResponse): Promise<void> 
       reject('Error occured while writing file');
     });
     stream.on('close', () => {
+      storageSpace.used += stream.bytesWritten;
       if (stream.bytesWritten !== res.locals.fileSize) {
         return reject(
           'File wasn\'t written properly. ' +
-          `Expected size ${req.headers['file-size']}, ` +
+          `Expected size ${res.locals.fileSize}, ` +
           `actual size ${stream.bytesWritten} bytes.`
         );
       }
@@ -75,7 +99,7 @@ export function writeFile(req: FileRequest, res: UploadResponse): Promise<void> 
         config.FILE_MODE,
         err => { if (err) console.error(err) }
       );
-      resolve();
+      resolve(stream.bytesWritten);
     });
   });
-}
+};
