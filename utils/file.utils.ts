@@ -27,7 +27,7 @@ export function rotateBackups(callback: (err: any) => void = console.error) {
 export function rotateFile(filePath: string, callback: (err: any) => void = console.error) {
   if (filePath.endsWith('.bak') && fs.existsSync(filePath)) {
     const stats = fs.statSync(filePath);
-    if (fileIsOld(stats)) {
+    if (backupIsOld(stats)) {
       fs.unlink(
         filePath,
         err => {
@@ -39,7 +39,7 @@ export function rotateFile(filePath: string, callback: (err: any) => void = cons
     }
   }
 
-  function fileIsOld(fileStats: fs.Stats) {
+  function backupIsOld(fileStats: fs.Stats) {
     return (Date.now() - fileStats.mtimeMs) > config.BACKUP_FILES_MAX_AGE;
   }
 };

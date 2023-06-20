@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { config } from '../config';
 import { storageSpace } from '../utils/storage.utils';
+import { rotateBackups } from '../utils/file.utils';
 
 interface FileRequestParams { fileId: string };
 
@@ -48,6 +49,8 @@ export function validateAvailableSpace(req: FileRequest, res: RawResponse, next:
   if (typeof fileSize === 'number') {
     const fileIsTooLarge = storageSpace.used + fileSize > storageSpace.capacity;
     if (fileIsTooLarge) return res.sendStatus(StatusCodes.REQUEST_TOO_LONG);
+    const freeSpace = storageSpace.capacity - (storageSpace.used + storageSpace.reservedForBackups);
+    if (freeSpace < fileSize) rotateBackups();
   }
   next();
 };
