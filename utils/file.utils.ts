@@ -40,7 +40,7 @@ export function rotateFile(filePath: string, callback: (err: any) => void = cons
   }
 
   function fileIsOld(fileStats: fs.Stats) {
-    return (Date.now() - fileStats.mtimeMs) / 1000 > config.BACKUP_FILES_MAX_AGE;
+    return (Date.now() - fileStats.mtimeMs) > config.BACKUP_FILES_MAX_AGE;
   }
 };
 
