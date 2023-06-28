@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import disk from 'diskusage';
 import { tmpdir, hostname } from 'os';
 import { constants as modes } from 'fs';
 import { v5 as uuidv5 } from 'uuid';
+
+const DEFAULT_STORAGE_SIZE_LIMIT = 10737418240; // 10GB
 
 export default class Config {
   readonly PORT: number;
@@ -19,7 +20,7 @@ export default class Config {
     dotenv.config({ path: configPath, override });
     this.PORT = +(process.env.PORT || 3000);
     this.STORAGE_PATH = path.resolve(process.env.STORAGE_PATH || path.join(tmpdir(), 'KEK-storage'));
-    this.STORAGE_SIZE_LIMIT = +(process.env.STORAGE_SIZE_LIMIT || disk.checkSync(this.STORAGE_PATH).free);
+    this.STORAGE_SIZE_LIMIT = +(process.env.STORAGE_SIZE_LIMIT || DEFAULT_STORAGE_SIZE_LIMIT);
     this.STORAGE_ID = process.env.STORAGE_ID || uuidv5(`http://${hostname()}:${this.PORT}`, uuidv5.URL);
     this.BACKUP_FILES_MAX_AGE = +(process.env.BACKUP_FILES_MAX_AGE || 0);
     this.TOKEN_SALT = process.env.TOKEN_SALT || '';
