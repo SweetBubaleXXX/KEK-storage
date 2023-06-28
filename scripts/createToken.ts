@@ -10,7 +10,7 @@ if (!(config.TOKEN_SALT && config.STORAGE_ID)) {
 }
 
 if (!process.argv[2]) {
-    console.error('\x1b[31mRequired positional argument [IP address]\x1b[0m');
+    console.error('\x1b[31mRequired positional argument [host]\x1b[0m');
     process.exit(1);
 }
 
@@ -21,7 +21,7 @@ const head = Buffer.from(JSON.stringify({
 
 const payload = Buffer.from(JSON.stringify({
     iss: config.STORAGE_ID,
-    sub: process.argv[2], // IP address
+    sub: process.argv[2], // client host
     iat: Math.floor(+new Date() / 1000)
 })).toString('base64url');
 
